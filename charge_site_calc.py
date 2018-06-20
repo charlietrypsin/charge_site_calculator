@@ -117,32 +117,75 @@ def charge_site_calc(file, charge_state):
     # residues chosen in order, randomised positions not required as the charges
     # will spread around the surface once the algorithm starts.
     
+    lys_counter = resposi_list.count('LYS')
+    arg_counter = resposi_list.count('ARG')
+    asp_counter = resposi_list.count('ASP')
+    glu_counter = resposi_list.count('GLU')
+    his_counter = resposi_list.count('HIS')
+    
+    final_charge = 0
+    
     for item in resposi_list:
         if charge >= 1:
-            if item in resname_list:
+            if item == 'LYS':
                 charge_list.append(1)
                 charge = (charge - 1)
+                final_charge = (final_charge + 1)
+            if item == 'ARG':
+                charge_list.append(1)
+                charge = (charge - 1)
+                final_charge = (final_charge + 1)
+            if item == 'ASP':
+                charge_list.append(1)
+                charge = (charge - 1)
+                final_charge = (final_charge + 0)           
+            if item == 'GLU':
+                charge_list.append(1)
+                charge = (charge - 1)
+                final_charge = (final_charge + 0)
             if item == 'HIS':
                 charge_list.append(1)
                 charge = (charge - 1)
+                final_charge = (final_charge + 1)
             if item == 'NTM':
-                charge_list.append(1)
+                charge_list.append(0)
                 charge = (charge - 1)
-            if item == 'CTM':
-                charge_list.append(1)
-                charge = (charge - 1)         
+                final_charge = (final_charge + 1)
         elif charge == 0:
-            if item in resname_list:
-                charge_list.append(0)
             if item == 'HIS':
                 charge_list.append(2)
+                final_charge = (final_charge + 1)
+            if item == 'LYS':
+                charge_list.append(0)
+                final_charge = (final_charge + 0)
+            if item =='ARG':
+                charge_list.append(0)
+                final_charge = (final_charge + 0)
             if item == 'NTM':
                 charge_list.append(2)
-            if item == 'CTM':
-                charge_list.append(0)
+                final_charge = (final_charge + 0)
+            if his_counter >= 1:
+                if item =='ASP':
+                    charge_list.append(0)
+                    his_counter = (his_counter - 1)
+                    final_charge = (final_charge - 1)
+                if item == 'GLU':
+                    charge_list.append(0)
+                    his_counter = (his_counter - 1)
+                    final_charge = (final_charge - 1)
+            elif his_counter == 0:
+                if item =='ASP':
+                    charge_list.append(1)
+                    final_charge = (final_charge + 0)
+                if item == 'GLU':
+                    charge_list.append(1)
+                    final_charge = (final_charge + 0)
+                if item == 'CTM':
+                    charge_list.append(2)
+                    final_charge = (final_charge + 0)
     
     # Write out protonation and deprotonation lists for use with the algorithm
-
+    print(final_charge)
     with open(structure_id + '_prot_list.txt', 'w') as file:
         for item in prot_list:
             file.write(str(item) +'\n')
@@ -152,10 +195,12 @@ def charge_site_calc(file, charge_state):
         for item in deprot_list:
             file.write(str(item) +'\n')
     print('Deprotonated list written')
-            
-    with open(structure_id + '_' + str(charge_state) + '_list.txt', 'w') as file:
-        for item in charge_list:
-            file.write(str(item) +'\n')
-    print('Protonation list for a +' + str(charge_state) + ' protein written')
-            
+    
+    if charge_state == final_charge:
+        with open(structure_id + '_' + str(charge_state) + '_list.txt', 'w') as file:
+            for item in charge_list:
+                file.write(str(item) +'\n')
+        print('Protonation list for ' + str(final_charge) + ' proton protein written')
+    else:
+        print('Problem writing out specific charge protonation list. Final charge annotated as: ' + str(final_charge) +' protons. May be a large number of negative residues or too many histidines.')
     return
