@@ -2,8 +2,15 @@ import Bio
 from Bio.PDB import *
 import numpy as np
 from itertools import repeat
+import ConfigParser
+from os import listdir, walk
+from os.path import isfile, join
+import argparse
+import ntpath
 
 # Input the appropriate filename (including .pdb extension) for the structure you want to look at
+
+########################################################################################################
 
 parser = PDBParser(PERMISSIVE=1)
 
@@ -26,8 +33,6 @@ def charge_site_calc(file, charge_state):
     asp_counter = 0
     glu_counter = 0
     his_counter = 0
-    h2o_counter = 0
-    het_counter = 0
     h2o_counter = 0
     het_counter = 0
 
@@ -78,8 +83,8 @@ def charge_site_calc(file, charge_state):
                     prot_list.append(1)
                     deprot_list.append(0)
                 if item == 'HIS':
-                    prot_list.append(1)
-                    deprot_list.append(2)
+                    prot_list.append(2)
+                    deprot_list.append(1)
                 if item == 'NTM':
                     prot_list.append(0)
                     deprot_list.append(2)
@@ -144,7 +149,7 @@ def charge_site_calc(file, charge_state):
                 charge = (charge - 1)
                 final_charge = (final_charge + 0)
             if item == 'HIS':
-                charge_list.append(1)
+                charge_list.append(2)
                 charge = (charge - 1)
                 final_charge = (final_charge + 1)
             if item == 'NTM':
@@ -204,3 +209,16 @@ def charge_site_calc(file, charge_state):
     else:
         print('Problem writing out specific charge protonation list. Final charge annotated as: ' + str(final_charge) +' protons. May be a large number of negative residues or too many histidines.')
     return
+
+########################################################################################################
+
+fileparser = argparse.ArgumentParser(description = 'Produce integer lists for protonation sites')
+fileparser.add_argument ('file', help = 'PDB File Name', action = 'store')
+fileparser.add_argument('charge', help = 'Protonation State', action = 'store')
+
+args = fileparser.parse_args()
+
+file = args.file
+z = int(args.charge)
+
+charge_site_calc(file, z)
